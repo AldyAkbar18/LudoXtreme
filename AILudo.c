@@ -35,10 +35,10 @@ void data(struct User pemain, struct Com Com1, struct Com Com2, struct Com Com3,
 void userChoice(struct User *pemain, struct Com *Com1, struct Com *Com2, struct Com *Com3, int langkah, int urutan);
 void gotoxy(int x, int y);
 void userOutPawn(struct User *pemain, int langkah);
-void userMovePawn(int langkah);
+void userMovePawn(struct User *pemain, int langkah);
 void showCom1Data(struct Com Com1);
 void showCom3Data(struct Com Com2);
-void maju(int a, int b);
+void maju(struct User *pemain, struct Com *Com1, struct Com *Com2, struct Com *Com3, int langkah, int urutan);
 void cekPosisi(int a, char *b);
 int max4Value(int value1, int value2, int value3, int value4);
 
@@ -247,7 +247,7 @@ void data(struct User pemain, struct Com Com1, struct Com Com2, struct Com Com3,
 		userChoice(&pemain, &Com1, &Com2, &Com3, langkah, urutan);
 	} else
 	{
-		maju(langkah, urutan);
+		maju(&pemain, &Com1, &Com2, &Com3, langkah, urutan);
 	}
 }
 
@@ -297,7 +297,7 @@ void userChoice(struct User *pemain, struct Com *Com1, struct Com *Com2, struct 
 			userOutPawn(pemain, langkah);
 		} else if( (*pemain).BidakUser[0].Lokasi!=0 && (*pemain).BidakUser[1].Lokasi!=0 && (*pemain).BidakUser[2].Lokasi!=0 && (*pemain).BidakUser[3].Lokasi!=0 )
 		{
-			userMovePawn(langkah);
+			userMovePawn(pemain, langkah);
 		} else
 		{
 			printf("1. Keluarkan bidak dari dalam homebase\n");
@@ -308,8 +308,18 @@ void userChoice(struct User *pemain, struct Com *Com1, struct Com *Com2, struct 
 				userOutPawn(pemain, langkah);
 			} else
 			{
-				userMovePawn(langkah);
+				userMovePawn(pemain, langkah);
 			}
+		}
+	} else
+	{
+		if( strcmp((*pemain).BidakUser[0].Status, "JALAN")==0 || strcmp((*pemain).BidakUser[1].Status, "JALAN")==0 || strcmp((*pemain).BidakUser[2].Status, "JALAN")==0 || strcmp((*pemain).BidakUser[3].Status, "JALAN")==0 )
+		{
+			userMovePawn(pemain, langkah);
+		} else
+		{
+			printf("Seluruh bidak masih berada di dalam Homebase");
+			getch();
 		}
 	}
 	
@@ -322,6 +332,7 @@ void userChoice(struct User *pemain, struct Com *Com1, struct Com *Com2, struct 
 void userOutPawn(struct User *pemain, int langkah)
 {
 	int pilihBidak;
+	char status[20];
 	printf("Inputkan no bidak yang ingin anda keluarkan : ");scanf("%d", &pilihBidak);
 	if( pilihBidak==1 )
 	{
@@ -333,9 +344,10 @@ void userOutPawn(struct User *pemain, int langkah)
 		} else
 		{
 			(*pemain).BidakUser[0].Lokasi = 1;
+			cekPosisi((*pemain).BidakUser[0].Lokasi, status);
+			strcpy((*pemain).BidakUser[0].Status, status);
 		}
-	}
-	if( pilihBidak==2 )
+	} else if( pilihBidak==2 )
 	{
 		if( (*pemain).BidakUser[1].Lokasi!=0 )
 		{
@@ -345,9 +357,10 @@ void userOutPawn(struct User *pemain, int langkah)
 		} else
 		{
 			(*pemain).BidakUser[1].Lokasi = 1;
+			cekPosisi((*pemain).BidakUser[1].Lokasi, status);
+			strcpy((*pemain).BidakUser[1].Status, status);
 		}
-	}
-	if( pilihBidak==3 )
+	} else if( pilihBidak==3 )
 	{
 		if( (*pemain).BidakUser[2].Lokasi!=0 )
 		{
@@ -357,9 +370,10 @@ void userOutPawn(struct User *pemain, int langkah)
 		} else
 		{
 			(*pemain).BidakUser[2].Lokasi = 1;
+			cekPosisi((*pemain).BidakUser[2].Lokasi, status);
+			strcpy((*pemain).BidakUser[2].Status, status);
 		}
-	}
-	if( pilihBidak==4 )
+	} else if( pilihBidak==4 )
 	{
 		if( (*pemain).BidakUser[3].Lokasi!=0 )
 		{
@@ -369,129 +383,223 @@ void userOutPawn(struct User *pemain, int langkah)
 		} else
 		{
 			(*pemain).BidakUser[3].Lokasi = 1;
+			cekPosisi((*pemain).BidakUser[3].Lokasi, status);
+			strcpy((*pemain).BidakUser[3].Status, status);
 		}
 	}
 }
 
-void userMovePawn(int langkah)
+void userMovePawn(struct User *pemain, int langkah)
 {
 	int pilihBidak;
+	char status[20];
 	printf("Inputkan no bidak yang ingin anda majukan (1-4) : ");scanf("%d", &pilihBidak);
-	
+	if( pilihBidak==1 )
+	{
+		if( (*pemain).BidakUser[0].Lokasi==0 )
+		{
+			printf("Bidak tidak dapat dikeluarkan karena masih berada di dalam homebase\n");
+			getch();
+			userMovePawn(pemain, langkah);
+		} else
+		{
+			if( (*pemain).BidakUser[0].Lokasi+langkah>73 )
+			{
+				(*pemain).BidakUser[0].Lokasi = 73;
+				strcpy((*pemain).BidakUser[0].Status, "FINISH");
+			} else
+			{
+				(*pemain).BidakUser[0].Lokasi += langkah;
+				cekPosisi((*pemain).BidakUser[0].Lokasi, status);
+				strcpy((*pemain).BidakUser[0].Status, status);
+			}
+		}
+	} else if( pilihBidak==2 )
+	{
+		if( (*pemain).BidakUser[1].Lokasi==0 )
+		{
+			printf("Bidak tidak dapat dikeluarkan karena masih berada di dalam homebase\n");
+			getch();
+			userMovePawn(pemain, langkah);
+		} else
+		{
+			if( (*pemain).BidakUser[1].Lokasi+langkah>73 )
+			{
+				(*pemain).BidakUser[1].Lokasi = 73;
+				strcpy((*pemain).BidakUser[1].Status, "FINISH");
+			} else
+			{
+				(*pemain).BidakUser[1].Lokasi += langkah;
+				cekPosisi((*pemain).BidakUser[1].Lokasi, status);
+				strcpy((*pemain).BidakUser[1].Status, status);
+			}
+		}
+	} else if( pilihBidak==3 )
+	{
+		if( (*pemain).BidakUser[2].Lokasi==0 )
+		{
+			printf("Bidak tidak dapat dikeluarkan karena masih berada di dalam homebase\n");
+			getch();
+			userMovePawn(pemain, langkah);
+		} else
+		{
+			if( (*pemain).BidakUser[2].Lokasi+langkah>73 )
+			{
+				(*pemain).BidakUser[2].Lokasi = 73;
+				strcpy((*pemain).BidakUser[2].Status, "FINISH");
+			} else
+			{
+				(*pemain).BidakUser[2].Lokasi += langkah;
+				cekPosisi((*pemain).BidakUser[2].Lokasi, status);
+				strcpy((*pemain).BidakUser[1].Status, status);
+			}
+		}
+	} else if( pilihBidak==4 )
+	{
+		if( (*pemain).BidakUser[3].Lokasi==0 )
+		{
+			printf("Bidak tidak dapat dikeluarkan karena masih berada di dalam homebase\n");
+			getch();
+			userMovePawn(pemain, langkah);
+		} else
+		{
+			if( (*pemain).BidakUser[3].Lokasi+langkah>73 )
+			{
+				(*pemain).BidakUser[3].Lokasi = 73;
+				strcpy((*pemain).BidakUser[3].Status, "FINISH");
+			} else
+			{
+				(*pemain).BidakUser[3].Lokasi += langkah;
+				cekPosisi((*pemain).BidakUser[3].Lokasi, status);
+				strcpy((*pemain).BidakUser[1].Status, status);
+			}
+		}
+	}
 }
 
-void maju(int langkah, int urutan)
+void maju(struct User *pemain, struct Com *Com1, struct Com *Com2, struct Com *Com3, int langkah, int urutan)
 {
-	char Personality[20];
-	
-	if(strcmp(Personality, "NOOBZ") == 0 || urutan==4 )
+	if( urutan==2 )
 	{
 		if( langkah==6 )
 		{
-			if( a==0 )
+			if( (*Com1).BidakCom[0].Lokasi==0 )
 			{
-				a = 1;
-				cekPosisi(a, sa);
-			} else if( (b==0) && (a==finish) )
+				(*Com1).BidakCom[0].Lokasi = 1;
+				cekPosisi((*Com1).BidakCom[0].Lokasi, sa);
+				strcpy((*Com1).BidakCom[0].Status, sa);
+				
+			} else if( ((*Com1).BidakCom[1].Lokasi==0) && ((*Com1).BidakCom[0].Lokasi==finish) )
 			{
-				b = 1;
-				cekPosisi(b, sb);
+				(*Com1).BidakCom[1].Lokasi = 1;
+				cekPosisi((*Com1).BidakCom[1].Lokasi, sb);
+				strcpy((*Com1).BidakCom[1].Status, sb);
 			}
-			else if( (c==0) && (b==finish) && (a==finish) )
+			else if( ((*Com1).BidakCom[2].Lokasi==0) && ((*Com1).BidakCom[1].Lokasi==finish) && ((*Com1).BidakCom[0].Lokasi==finish) )
 			{
-				c = 1;
-				cekPosisi(c, sc);
+				(*Com1).BidakCom[2].Lokasi = 1;
+				cekPosisi((*Com1).BidakCom[2].Lokasi, sc);
+				strcpy((*Com1).BidakCom[2].Status, sc);
 			}
-			else if( (d==0) && (c==finish) && (b==finish) && (a==finish) )
+			else if( ((*Com1).BidakCom[3].Lokasi==0) && ((*Com1).BidakCom[2].Lokasi==finish) && ((*Com1).BidakCom[1].Lokasi==finish) && ((*Com1).BidakCom[0].Lokasi==finish) )
 			{
-				d = 1;
-				cekPosisi(d, sd);
-			} else if ( ((a!=0) || (a!= finish)) && strcmp(sa, "FINISH") != 0 )
+				(*Com1).BidakCom[3].Lokasi = 1;
+				cekPosisi((*Com1).BidakCom[3].Lokasi, sd);
+				strcpy((*Com1).BidakCom[3].Status, sd);
+			} else if ( (((*Com1).BidakCom[0].Lokasi!=0) || ((*Com1).BidakCom[0].Lokasi!= finish)) && strcmp((*Com1).BidakCom[0].Status, "FINISH") != 0 )
 			{
-				if(a+langkah >=73)
+				if((*Com1).BidakCom[0].Lokasi+langkah >=73)
 				{
-					a = 73;
+					(*Com1).BidakCom[0].Lokasi = 73;
 				} else
 				{
-					a += langkah;
+					(*Com1).BidakCom[0].Lokasi += langkah;
 				}
-				cekPosisi(a, sa);
-			} else if ( ((b!=0) || (b!= finish)) && strcmp(sb, "FINISH") != 0 )
+				cekPosisi((*Com1).BidakCom[0].Lokasi, sa);
+				strcpy((*Com1).BidakCom[0].Status, sa);
+			} else if ( (((*Com1).BidakCom[1].Lokasi!=0) || ((*Com1).BidakCom[1].Lokasi!= finish)) && strcmp((*Com1).BidakCom[1].Status, "FINISH") != 0 )
 			{
-				if(b+langkah >=73)
+				if((*Com1).BidakCom[1].Lokasi+langkah >=73)
 				{
-					b = 73;
+					(*Com1).BidakCom[1].Lokasi = 73;
 				} else
 				{
-					b += langkah;
+					(*Com1).BidakCom[1].Lokasi += langkah;
 				}
-				cekPosisi(b, sb);
-			} else if ( ((c!=0) || (c!= finish)) && strcmp(sc, "FINISH") != 0 )
+				cekPosisi((*Com1).BidakCom[1].Lokasi, sb);
+				strcpy((*Com1).BidakCom[1].Status, sb);
+			} else if ( (((*Com1).BidakCom[2].Lokasi!=0) || ((*Com1).BidakCom[2].Lokasi!= finish)) && strcmp((*Com1).BidakCom[2].Status, "FINISH") != 0 )
 			{
-				if(c+langkah >=73)
+				if((*Com1).BidakCom[2].Lokasi+langkah >=73)
 				{
-					c = 73;
+					(*Com1).BidakCom[2].Lokasi = 73;
 				} else
 				{
-					c += langkah;
+					(*Com1).BidakCom[2].Lokasi += langkah;
 				}
-				cekPosisi(c, sc);
-			} else if ( ((d!=0) || (d!= finish)) && strcmp(sd, "FINISH") != 0 )
+				cekPosisi((*Com1).BidakCom[2].Lokasi, sc);
+				strcpy((*Com1).BidakCom[2].Status, sc);
+			} else if ( (((*Com1).BidakCom[3].Lokasi!=0) || ((*Com1).BidakCom[3].Lokasi!= finish)) && strcmp((*Com1).BidakCom[3].Status, "FINISH") != 0 )
 			{
-				if(d+langkah >=73)
+				if((*Com1).BidakCom[3].Lokasi+langkah >=73)
 				{
-					d = 73;
+					(*Com1).BidakCom[3].Lokasi = 73;
 				} else
 				{
-					d += langkah;
+					(*Com1).BidakCom[3].Lokasi += langkah;
 				}
-				cekPosisi(d, sd);
+				cekPosisi((*Com1).BidakCom[3].Lokasi, sd);
+				strcpy((*Com1).BidakCom[3].Status, sd);
 			}
-		} else if( ((a!=0) && strcmp(sa, "FINISH") != 0) || ((b!=0) && strcmp(sb, "FINISH") != 0) || ((c!=0) && strcmp(sc, "FINISH") != 0) || ((d!=0) && strcmp(sd, "FINISH") != 0) )
+		} else if( (((*Com1).BidakCom[0].Lokasi!=0) && strcmp((*Com1).BidakCom[0].Status, "FINISH") != 0) || (((*Com1).BidakCom[1].Lokasi!=0) && strcmp((*Com1).BidakCom[1].Status, "FINISH") != 0) || (((*Com1).BidakCom[2].Lokasi!=0) && strcmp((*Com1).BidakCom[2].Status, "FINISH") != 0) || (((*Com1).BidakCom[3].Lokasi!=0) && strcmp((*Com1).BidakCom[3].Status, "FINISH") != 0) )
 		{
-			if ( ((a!=0) || (a!= finish)) && strcmp(sa, "FINISH") != 0 )
+			if ( (((*Com1).BidakCom[0].Lokasi!=0) || ((*Com1).BidakCom[0].Lokasi!= finish)) && strcmp((*Com1).BidakCom[0].Status, "FINISH") != 0 )
 			{
-				if(a+langkah >=73)
+				if((*Com1).BidakCom[0].Lokasi+langkah >=73)
 				{
-					a = 73;
+					(*Com1).BidakCom[0].Lokasi = 73;
 				} else
 				{
-					a += langkah;
+					(*Com1).BidakCom[0].Lokasi += langkah;
 				}
-				cekPosisi(a, sa);
-			} else if ( ((b!=0) || (b!= finish)) && strcmp(sb, "FINISH") != 0 )
+				cekPosisi((*Com1).BidakCom[0].Lokasi, sa);
+				strcpy((*Com1).BidakCom[0].Status, sa);
+			} else if ( (((*Com1).BidakCom[1].Lokasi!=0) || ((*Com1).BidakCom[1].Lokasi!= finish)) && strcmp((*Com1).BidakCom[1].Status, "FINISH") != 0 )
 			{
-				if(b+langkah >=73)
+				if((*Com1).BidakCom[1].Lokasi+langkah >=73)
 				{
-					b = 73;
+					(*Com1).BidakCom[1].Lokasi = 73;
 				} else
 				{
-					b += langkah;
+					(*Com1).BidakCom[1].Lokasi += langkah;
 				}
-				cekPosisi(b, sb);
-			} else if ( ((c!=0) || (c!= finish)) && strcmp(sc, "FINISH") != 0 )
+				cekPosisi((*Com1).BidakCom[1].Lokasi, sb);
+				strcpy((*Com1).BidakCom[1].Status, sb);
+			} else if ( (((*Com1).BidakCom[2].Lokasi!=0) || ((*Com1).BidakCom[2].Lokasi!= finish)) && strcmp((*Com1).BidakCom[2].Status, "FINISH") != 0 )
 			{
-				if(c+langkah >=73)
+				if((*Com1).BidakCom[2].Lokasi+langkah >=73)
 				{
-					c = 73;
+					(*Com1).BidakCom[2].Lokasi = 73;
 				} else
 				{
-					c += langkah;
+					(*Com1).BidakCom[2].Lokasi += langkah;
 				}
-				cekPosisi(c, sc);
-			} else if ( ((d!=0) || (d!= finish)) && strcmp(sd, "FINISH") != 0 )
+				cekPosisi((*Com1).BidakCom[2].Lokasi, sc);
+				strcpy((*Com1).BidakCom[2].Status, sc);
+			} else if ( (((*Com1).BidakCom[3].Lokasi!=0) || ((*Com1).BidakCom[3].Lokasi!= finish)) && strcmp((*Com1).BidakCom[3].Status, "FINISH") != 0 )
 			{
-				if(d+langkah >=73)
+				if((*Com1).BidakCom[3].Lokasi+langkah >=73)
 				{
-					d = 73;
+					(*Com1).BidakCom[3].Lokasi = 73;
 				} else
 				{
-					d += langkah;
+					(*Com1).BidakCom[3].Lokasi += langkah;
 				}
-				cekPosisi(d, sd);
+				cekPosisi((*Com1).BidakCom[3].Lokasi, sd);
+				strcpy((*Com1).BidakCom[3].Status, sd);
 			}
 		}
-	} else if(strcmp(Personality, "Lumayan") == 0 || urutan == 3)
+	} else if(urutan == 3)
 	{
 		int max, jarak1, jarak2, jarak3, jarak4;
 		if( langkah==6 )
@@ -658,7 +766,7 @@ void maju(int langkah, int urutan)
 				cekPosisi(d, sd);
 			}
 		}
-	} else if(strcmp(Personality, "GGPRO") == 0 || urutan==2 )
+	} else if(urutan==4 )
 	{
 		if( langkah==6 )
 		{
@@ -1010,13 +1118,15 @@ void maju(int langkah, int urutan)
 		}
 	}
 	
-	if( urutan==4 )
+	if( urutan==2 )
 	{
 		urutan = 1;
 	} else
 	{
 		urutan+=1;
 	}
+	
+	data(*pemain, *Com1, *Com2, *Com3, urutan);
 }
 
 int max4Value(int value1, int value2, int value3, int value4)
